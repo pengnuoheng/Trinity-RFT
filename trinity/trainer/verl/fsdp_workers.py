@@ -124,7 +124,7 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
             rank = int(os.environ.get("RANK", 0))
             world_size = int(os.environ.get("WORLD_SIZE", 1))
             torch.distributed.init_process_group(
-                backend=f"cpu:gloo,{get_device_name()}:{get_nccl_backend()}",
+                backend=f"cpu:gloo,npu:hccl",
                 rank=rank,
                 world_size=world_size,
                 timeout=datetime.timedelta(seconds=self.config.get("nccl_timeout", 600)),
@@ -524,13 +524,16 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
         # We force turn off CPUOffload for actor because it causes incorrect results when using grad accumulation
         cpu_offload = None if role == "actor" else CPUOffload(offload_params=True)
         fsdp_strategy = self.config.actor.strategy
+        local_rank = int(os.environ.get("LOCAL_RANK", 0))
+        torch.npu.set_device(local_rank)
+        actor_module = actor_module.npu()
         if fsdp_strategy == "fsdp":
             actor_module_fsdp = FSDP(
                 actor_module,
                 cpu_offload=cpu_offload,
                 param_init_fn=init_fn,
                 auto_wrap_policy=auto_wrap_policy,
-                device_id=get_device_id(),
+                device_id=local_rank,
                 sharding_strategy=sharding_strategy,  # zero3
                 mixed_precision=mixed_precision,
                 sync_module_states=True,
@@ -803,15 +806,15 @@ class ActorRolloutRefWorker(Worker, DistProfilerExtension):
                     master_address, master_port, self.state_dict_meta
                 )
                 timeout = self.config.synchronizer.sync_timeout
-
+                local_rank = torch.distributed.get_rank()
                 self._model_update_group = init_process_group(
                     host=master_address,
                     port=master_port,
                     group_name=ROLLOUT_WEIGHT_SYNC_GROUP_NAME,
-                    backend="nccl",
+                    backend="hccl",
                     timeout=timeout,
                     world_size=world_size,
-                    device_id=torch.device(f"cuda:{get_device_id()}"),
+                    device_id=torch.device(f"npu:{local_rank}"),
                     rank=0,
                 )
                 torch.distributed.barrier(group=self._model_update_group)
@@ -1166,7 +1169,7 @@ class CriticWorker(Worker, DistProfilerExtension):
 
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group(
-                backend=get_nccl_backend(),
+                backend="hccl",
                 timeout=datetime.timedelta(seconds=self.config.get("nccl_timeout", 600)),
                 init_method=os.environ.get("DIST_INIT_METHOD", None),
             )

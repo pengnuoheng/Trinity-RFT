@@ -25,7 +25,7 @@ class WorkerExtension:
         rank_offset: int,
         world_size: int,
         group_name: str,
-        backend: str = "nccl",
+        backend: str = "hccl",
         timeout: int = 1200,
         state_dict_meta: list = None,
         explorer_name: str = None,

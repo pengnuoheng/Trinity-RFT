@@ -46,7 +46,7 @@ class Converter:
             os.environ["MASTER_PORT"] = "12355"
 
         set_numa_affinity()
-        torch.distributed.init_process_group(get_nccl_backend())
+        torch.distributed.init_process_group("hccl")
         self._init_process_group = True
 
     def init_checkpoint_converter(self, checkpoint_dir) -> bool:

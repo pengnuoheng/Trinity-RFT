@@ -70,7 +70,7 @@ class StorageType(CaseInsensitiveEnum):
 
 class SyncMethodEnumMeta(CaseInsensitiveEnumMeta):
     name_aliases = {
-        "online": "nccl",
+        "online": "hccl",
         "offline": "checkpoint",
     }
 
@@ -78,7 +78,7 @@ class SyncMethodEnumMeta(CaseInsensitiveEnumMeta):
 class SyncMethod(CaseInsensitiveEnum, metaclass=SyncMethodEnumMeta):
     """Sync Method."""
 
-    NCCL = "nccl"
+    NCCL = "hccl"
     CHECKPOINT = "checkpoint"
     MEMORY = "memory"
 

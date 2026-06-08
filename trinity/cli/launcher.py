@@ -8,6 +8,8 @@ from typing import Optional
 
 import ray
 import typer
+import rotch_npu
+from rotch_npu.contrib import transfer_to_npu
 from typing_extensions import Annotated
 
 from trinity.common.config import Config, load_config

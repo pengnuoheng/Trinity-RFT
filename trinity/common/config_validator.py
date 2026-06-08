@@ -191,7 +191,7 @@ class RayClusterConfigValidator(ConfigValidator):
         if not config.cluster.gpu_per_node:
             gpu_per_node = 0
             for node in alive_nodes:
-                node_gpus = node.get("Resources", {}).get("GPU")
+                node_gpus = node.get("Resources", {}).get("NPU")
                 if node_gpus and node_gpus > 0:
                     gpu_per_node = int(node_gpus)
                     break

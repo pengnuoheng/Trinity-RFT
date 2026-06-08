@@ -18,8 +18,8 @@ class _BundleAllocator:
 
     def __init__(self, num_gpus: int) -> None:
         self.logger = get_logger(__name__, in_ray_actor=True)
-        bundles = [{"GPU": 1} for _ in range(num_gpus)]
-        self.pg = placement_group(bundles, strategy="PACK")
+        bundles = [{"NPU": 1, "CPU" : 8} for _ in range(num_gpus)]
+        self.pg = placement_group(bundles, strategy="STRICT_PACK")
         ray.get(self.pg.ready())
         # to address https://github.com/ray-project/ray/issues/51117
         # aggregate bundles belonging to the same node
@@ -117,8 +117,9 @@ def create_explorer_models(
             ray.remote(vLLMRolloutModel)
             .options(
                 name=f"{config.explorer.name}_rollout_model_0",
-                num_cpus=0,
-                num_gpus=0,
+                # num_cpus=0,
+                # num_gpus=0,
+                resource={"NPU": 1},
                 namespace=config.ray_namespace,
             )
             .remote(
@@ -181,8 +182,9 @@ def create_vllm_inference_models(
             ray.remote(vLLMRolloutModel)
             .options(
                 name=f"{actor_name}_{i}",
-                num_cpus=0,
-                num_gpus=0 if config.tensor_parallel_size > 1 else 1,
+                # num_cpus=0,
+                # num_gpus=0 if config.tensor_parallel_size > 1 else 1,
+                resource={"NPU": 1},
                 namespace=config.ray_namespace,
                 scheduling_strategy=PlacementGroupSchedulingStrategy(
                     placement_group=allocator.pg,

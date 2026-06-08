@@ -53,11 +53,11 @@ def init_process_group(
     """
     This function is used to initialize the process group. It requires torch >= 2.6.0
     """
-    assert backend == "nccl", "Only nccl backend is supported for now."
-
-    from torch.distributed.distributed_c10d import is_nccl_available
-
-    assert is_nccl_available()
+    # assert backend == "nccl", "Only nccl backend is supported for now."
+    #
+    # from torch.distributed.distributed_c10d import is_nccl_available
+    #
+    # assert is_nccl_available()
 
     init_method = (
         f"tcp://[{host}]:{port}" if is_ipv6_address(ip_str=host) else f"tcp://{host}:{port}"

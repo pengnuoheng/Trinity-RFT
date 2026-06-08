@@ -378,7 +378,7 @@ class Trainer:
     sync_freq: int = 0
     max_actor_ckpt_to_keep: Optional[int] = None
     max_critic_ckpt_to_keep: Optional[int] = None
-    device: str = "cuda"  # default to cuda
+    device: str = "npu"  # default to cuda
 
 
 @dataclass

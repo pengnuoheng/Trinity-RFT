@@ -529,7 +529,7 @@ class vLLMRolloutModel(BaseInferenceModel):
                 rank_offset,
                 world_size,
                 group_name,
-                backend,
+                "hccl",
                 timeout,
                 state_dict_meta,
                 explorer_name,
